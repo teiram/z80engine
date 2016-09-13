@@ -34,11 +34,9 @@ public class Oscillator implements ClockSource {
     }
 
     private static void sleepNanos(long delayNanos) {
-        if (delayNanos < 0) {
-            LOGGER.debug("Oscillator is not able to keep up with the frequency. Negative delay " + delayNanos);
-        } else {
+        if (delayNanos > 0) {
             try {
-                Thread.sleep(delayNanos / 1000000, (int) delayNanos % 1000000);
+                Thread.sleep(delayNanos / 1000000, (int) (delayNanos % 1000000));
             } catch (InterruptedException ie) {
                 LOGGER.debug("Oscillator thread was interrupted");
             }
@@ -48,20 +46,19 @@ public class Oscillator implements ClockSource {
     private void oscillatorService() {
         runningStatus = RunningStatus.RUNNING;
         cycleCounter = 0;
-        double halfCycleDelay = 1000000000.0 / (frequency * 2.0); //Nanoseconds delay
-        LOGGER.debug("Half cycle delay calculated as " + halfCycleDelay + " ns");
+        double halfCyclePeriod = 1000000000.0 / (frequency * 2.0); //Nanoseconds delay
         while (runningStatus == RunningStatus.RUNNING) {
             long halfCycleMark = System.nanoTime();
             //Set pins high
             boundedPins.forEach(p -> p.setStatus(PinStatus.HIGH));
             long elapsed = System.nanoTime() - halfCycleMark;
-            Double delay = halfCycleDelay - elapsed; //Half clock cycle minus elapsed time
+            Double delay = halfCyclePeriod - elapsed; //Half clock cycle minus elapsed time
             sleepNanos(delay.longValue());
             halfCycleMark = System.nanoTime();
             //Set pins low
             boundedPins.forEach(p -> p.setStatus(PinStatus.LOW));
             elapsed = System.nanoTime() - halfCycleMark;
-            delay = halfCycleDelay - elapsed;
+            delay = halfCyclePeriod - elapsed;
             sleepNanos(delay.longValue());
             cycleCounter++;
         }

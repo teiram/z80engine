@@ -3,10 +3,13 @@ package com.grelobites.z80engine;
 import com.grelobites.z80engine.components.Oscillator;
 import com.grelobites.z80engine.components.Z80;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertNotEquals;
 
 public class LifeTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(LifeTest.class);
 
     @Test
     public void bindZ80ToOscillatorAndRun() throws Exception {
@@ -16,6 +19,8 @@ public class LifeTest {
         oscillator.start();
         Thread.sleep(10000L);
         oscillator.stop();
+        LOGGER.debug("Oscilator cycles: " + oscillator.getCycleCounter()
+            + ", CPU clock changes: " + z80.getElapsedClockPulses());
         assertNotEquals(0, z80.getElapsedClockPulses());
     }
 }
